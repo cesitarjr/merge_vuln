@@ -41,7 +41,8 @@ df_tsv = pd.read_csv(tsv_file, sep='\t')
 df_xlsx = pd.read_excel(xlsx_file)
 
 # Asegurar que las columnas necesarias existen y tienen el mismo nombre
-required_columns = ["Activo afectado", "vulnerabilidad", "severidad"]
+# Ajustar los nombres de las columnas para que coincidan con los de los ficheros
+required_columns = ["HostValue", "Activo Afectado", "Vulnerabilidad", "Severidad"]
 
 # Mostrar columnas de ambos archivos para depuración
 print(f"Columnas en el TSV: {list(df_tsv.columns)}")
