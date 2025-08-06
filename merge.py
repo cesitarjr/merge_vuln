@@ -44,19 +44,62 @@ except UnicodeDecodeError:
 # Cargar el Excel
 df_xlsx = pd.read_excel(xlsx_file)
 
-# Asegurar que las columnas necesarias existen y tienen el mismo nombre
-# Ajustar los nombres de las columnas para que coincidan con los de los ficheros
-# Se incluyen columnas adicionales para garantizar un cruce más estricto
+# Diccionarios de equivalencias para severidad y riesgo
+severity_map = {
+    "critical": "Crítica",
+    "critica": "Crítica",
+    "crítica": "Crítica",
+    "alta": "Alta",
+    "high": "Alta",
+    "media": "Media",
+    "medium": "Media",
+    "baja": "Baja",
+    "low": "Baja",
+    "info": "Informativa",
+    "informativa": "Informativa",
+}
+risk_map = {
+    "critical": "Crítico",
+    "critica": "Crítico",
+    "crítica": "Crítico",
+    "alta": "Alto",
+    "alto": "Alto",
+    "high": "Alto",
+    "media": "Medio",
+    "medium": "Medio",
+    "medio": "Medio",
+    "baja": "Bajo",
+    "bajo": "Bajo",
+    "low": "Bajo",
+    "info": "Informativo",
+    "informativa": "Informativo",
+    "informativo": "Informativo",
+}
+
+# Normalizar y aplicar equivalencias en columnas de severidad y riesgo
+for df in (df_tsv, df_xlsx):
+    if "Severidad" in df.columns:
+        df["Severidad"] = (
+            df["Severidad"].astype(str).str.lower().str.strip().map(severity_map).fillna(df["Severidad"])
+        )
+    if "Riesgo" in df.columns:
+        df["Riesgo"] = (
+            df["Riesgo"].astype(str).str.lower().str.strip().map(risk_map).fillna(df["Riesgo"])
+        )
+
+# Columnas clave para realizar el cruce
 required_columns = [
     "HostValue",
     "Activo Afectado",
     "Vulnerabilidad",
-    "Severidad",
-    "Descripción",
-    "Propuesta resolución",
-    "Estado",
-    "Plugin Output",
 ]
+
+# Normalizar cadenas en columnas clave
+for col in required_columns:
+    if col in df_tsv.columns:
+        df_tsv[col] = df_tsv[col].astype(str).str.lower().str.strip()
+    if col in df_xlsx.columns:
+        df_xlsx[col] = df_xlsx[col].astype(str).str.lower().str.strip()
 
 # Mostrar columnas de ambos archivos para depuración
 #print(f"Columnas en el TSV: {list(df_tsv.columns)}")
