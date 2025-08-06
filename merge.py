@@ -34,8 +34,12 @@ if not os.path.isfile(xlsx_file):
     print(f"[ERROR] No se encontró el archivo Excel: {xlsx_file}")
     raise FileNotFoundError(f"No se encontró el archivo Excel: {xlsx_file}")
 
-# Cargar el TSV
-df_tsv = pd.read_csv(tsv_file, sep='\t')
+# Cargar el TSV intentando primero con UTF-8 y
+# haciendo un fallback a latin-1 si aparecen errores
+try:
+    df_tsv = pd.read_csv(tsv_file, sep='\t', encoding="utf-8")
+except UnicodeDecodeError:
+    df_tsv = pd.read_csv(tsv_file, sep='\t', encoding="latin-1")
 
 # Cargar el Excel
 df_xlsx = pd.read_excel(xlsx_file)
