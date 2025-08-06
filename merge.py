@@ -42,18 +42,38 @@ df_xlsx = pd.read_excel(xlsx_file)
 
 # Asegurar que las columnas necesarias existen y tienen el mismo nombre
 # Ajustar los nombres de las columnas para que coincidan con los de los ficheros
-required_columns = ["HostValue", "Activo Afectado", "Vulnerabilidad", "Severidad"]
+# Se incluyen columnas adicionales para garantizar un cruce más estricto
+required_columns = [
+    "HostValue",
+    "Activo Afectado",
+    "Vulnerabilidad",
+    "Severidad",
+    "Descripción",
+    "Propuesta resolución",
+    "Estado",
+    "Plugin Output",
+]
 
 # Mostrar columnas de ambos archivos para depuración
 print(f"Columnas en el TSV: {list(df_tsv.columns)}")
 print(f"Columnas en el Excel: {list(df_xlsx.columns)}")
 
-for col in required_columns:
-    if col not in df_tsv.columns or col not in df_xlsx.columns:
-        raise ValueError(f"Falta la columna '{col}' en uno de los ficheros")
+# Verificar que todas las columnas necesarias estén presentes en ambos DataFrames
+missing_tsv = [col for col in required_columns if col not in df_tsv.columns]
+missing_xlsx = [col for col in required_columns if col not in df_xlsx.columns]
+if missing_tsv or missing_xlsx:
+    raise ValueError(
+        f"Faltan columnas en los DataFrames. TSV: {missing_tsv}, Excel: {missing_xlsx}"
+    )
 
-# Buscar coincidencias
-coincidencias = pd.merge(df_tsv, df_xlsx, on=required_columns, how='inner')
+# Buscar coincidencias estrictas
+coincidencias = pd.merge(df_tsv, df_xlsx, on=required_columns, how="inner")
+
+# Opcional: detectar filas sin coincidencias exactas
+outer_merge = pd.merge(
+    df_tsv, df_xlsx, on=required_columns, how="outer", indicator=True
+)
+no_coinciden = outer_merge[outer_merge["_merge"] != "both"]
 
 # Mostrar resultados
 if not coincidencias.empty:
@@ -61,3 +81,7 @@ if not coincidencias.empty:
     print(coincidencias)
 else:
     print("No se encontraron coincidencias entre los ficheros.")
+
+if not no_coinciden.empty:
+    print("Filas que no coinciden entre los ficheros:")
+    print(no_coinciden)
