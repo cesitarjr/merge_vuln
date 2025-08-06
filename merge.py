@@ -22,9 +22,9 @@ tsv_file = os.path.join(INPUT_DIR, TSV_FILENAME)
 xlsx_file = os.path.join(INPUT_DIR, XLSX_FILENAME)
 
 # Mensajes de depuración para saber qué busca y dónde
-print(f"Buscando TSV en: {tsv_file}")
-print(f"Buscando Excel en: {xlsx_file}")
-print(f"Archivos realmente presentes en 'inputs': {os.listdir(INPUT_DIR)}")
+#print(f"Buscando TSV en: {tsv_file}")
+#print(f"Buscando Excel en: {xlsx_file}")
+#print(f"Archivos realmente presentes en 'inputs': {os.listdir(INPUT_DIR)}")
 
 # Verificar existencia de archivos antes de cargar
 if not os.path.isfile(tsv_file):
@@ -55,8 +55,8 @@ required_columns = [
 ]
 
 # Mostrar columnas de ambos archivos para depuración
-print(f"Columnas en el TSV: {list(df_tsv.columns)}")
-print(f"Columnas en el Excel: {list(df_xlsx.columns)}")
+#print(f"Columnas en el TSV: {list(df_tsv.columns)}")
+#print(f"Columnas en el Excel: {list(df_xlsx.columns)}")
 
 # Verificar que todas las columnas necesarias estén presentes en ambos DataFrames
 missing_tsv = [col for col in required_columns if col not in df_tsv.columns]
@@ -76,6 +76,7 @@ outer_merge = pd.merge(
 no_coinciden = outer_merge[outer_merge["_merge"] != "both"]
 
 # Mostrar resultados
+print("─" * 80)  # Línea continua separadora
 if not coincidencias.empty:
     print("Se encontraron las siguientes coincidencias:")
     print(coincidencias)
@@ -85,3 +86,4 @@ else:
 if not no_coinciden.empty:
     print("Filas que no coinciden entre los ficheros:")
     print(no_coinciden)
+print("─" * 80)  # Línea continua separadora
