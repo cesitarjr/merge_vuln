@@ -58,23 +58,6 @@ severity_map = {
     "info": "Informativa",
     "informativa": "Informativa",
 }
-risk_map = {
-    "critical": "Crítico",
-    "critica": "Crítico",
-    "crítica": "Crítico",
-    "alta": "Alto",
-    "alto": "Alto",
-    "high": "Alto",
-    "media": "Medio",
-    "medium": "Medio",
-    "medio": "Medio",
-    "baja": "Bajo",
-    "bajo": "Bajo",
-    "low": "Bajo",
-    "info": "Informativo",
-    "informativa": "Informativo",
-    "informativo": "Informativo",
-}
 
 # Normalizar y aplicar equivalencias en columnas de severidad y riesgo
 for df in (df_tsv, df_xlsx):
