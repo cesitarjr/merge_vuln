@@ -47,15 +47,16 @@ df_xlsx = pd.read_excel(xlsx_file)
 # Diccionarios de equivalencias para severidad y riesgo
 severity_map = {
     "critical": "Crítica",
+    "critica": "Crítica",
+    "crítica": "Crítica",
+    "alta": "Alta",
     "high": "Alta",
+    "media": "Media",
     "medium": "Media",
+    "baja": "Baja",
     "low": "Baja",
-}
-risk_map = {
-    "critical": "Crítico",
-    "high": "Alto",
-    "medium": "Medio",
-    "low": "Bajo",
+    "info": "Informativa",
+    "informativa": "Informativa",
 }
 
 # Normalizar y aplicar equivalencias en columnas de severidad y riesgo
