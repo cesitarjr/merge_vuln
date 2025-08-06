@@ -77,13 +77,19 @@ no_coinciden = outer_merge[outer_merge["_merge"] != "both"]
 
 # Mostrar resultados
 print("─" * 80)  # Línea continua separadora
-if not coincidencias.empty:
-    print("Se encontraron las siguientes coincidencias:")
-    print(coincidencias)
+if coincidencias.empty:
+    print("No se han encontrado coincidencias")
 else:
-    print("No se encontraron coincidencias entre los ficheros.")
-
-if not no_coinciden.empty:
-    print("Filas que no coinciden entre los ficheros:")
-    print(no_coinciden)
+    print("Se han encontrado coincidencias:")
+    columnas = [
+        "Activo Afectado",
+        "Vulnerabilidad",
+        "Severidad",
+        "Descripción",
+        "Estado",
+    ]
+    print(coincidencias[columnas])
+    if not no_coinciden.empty:
+        print("Filas que no coinciden entre los ficheros:")
+        print(no_coinciden)
 print("─" * 80)  # Línea continua separadora
