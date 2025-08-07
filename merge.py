@@ -139,25 +139,48 @@ def main() -> None:
 
     if matches.empty:
         print("No se han encontrado coincidencias")
-        return
+    else:
+        rename_map = {
+            "Activo Afectado_f1": "Activo Afectado",
+            "Activo Afectado_f2": "Activo Afectado",
+            "Vulnerabilidad_f1": "Vulnerabilidad",
+            "Vulnerabilidad_f2": "Vulnerabilidad",
+            "Descripción_f1": "Descripción",
+            "Descripción_f2": "Descripción",
+        }
+        rename_map = {k: v for k, v in rename_map.items() if k in matches.columns}
+        out = matches[list(rename_map)].rename(columns=rename_map)
+        out = out.loc[:, ~out.columns.duplicated()]
+        out = out[
+            [
+                c
+                for c in ["Activo Afectado", "Vulnerabilidad", "Descripción"]
+                if c in out.columns
+            ]
+        ]
+        print(out)
 
-    rename_map = {
-        "Activo Afectado_f1": "Activo Afectado",
-        "Activo Afectado_f2": "Activo Afectado",
-        "Vulnerabilidad_f1": "Vulnerabilidad",
-        "Vulnerabilidad_f2": "Vulnerabilidad",
-        "Descripción_f1": "Descripción",
-        "Descripción_f2": "Descripción",
-    }
-    rename_map = {k: v for k, v in rename_map.items() if k in matches.columns}
-    out = matches[list(rename_map)].rename(columns=rename_map)
-    out = out.loc[:, ~out.columns.duplicated()]
-    out = out[[c for c in ["Activo Afectado", "Vulnerabilidad", "Descripción"] if c in out.columns]]
-    print(out)
+        output_path = OUTPUT_DIR / "coincidencias.tsv"
+        out.to_csv(output_path, sep="\t", index=False, encoding="utf-8")
+        print(f"Resultados exportados en {output_path}")
 
-    output_path = OUTPUT_DIR / "coincidencias.tsv"
-    out.to_csv(output_path, sep="\t", index=False, encoding="utf-8")
-    print(f"Resultados exportados en {output_path}")
+    resolved = (
+        pd.merge(n1, n2[on_cols], on=on_cols, how="left", indicator=True)
+        .query("_merge == 'left_only'")
+        [["Activo Afectado", "Vulnerabilidad"]]
+    )
+    if not resolved.empty:
+        print("VULNERABILIDADES CORREGIDAS")
+        print(resolved)
+
+    new = (
+        pd.merge(n2, n1[on_cols], on=on_cols, how="left", indicator=True)
+        .query("_merge == 'left_only'")
+        [["Activo Afectado", "Vulnerabilidad"]]
+    )
+    if not new.empty:
+        print("VULNERABILIDADES NUEVAS")
+        print(new)
 
 
 if __name__ == "__main__":
