@@ -161,7 +161,9 @@ def main() -> None:
         rename_map = {k: v for k, v in rename_map.items() if k in matches.columns}
         out = matches[list(rename_map)].rename(columns=rename_map)
         out = out.loc[:, ~out.columns.duplicated()]
-        out["Icono"] = out["Severidad"].map(PUNTOS)
+        out["Severidad"] = out["Severidad"].apply(
+            lambda s: f"{PUNTOS.get(s, '')} {s}"
+        )
         out = out[
             [
                 c
@@ -170,7 +172,6 @@ def main() -> None:
                     "Severidad",
                     "Vulnerabilidad",
                     "Descripción",
-                    "Icono",
                 ]
                 if c in out.columns
             ]
@@ -187,7 +188,9 @@ def main() -> None:
         [["Activo Afectado", "Severidad", "Vulnerabilidad"]]
     )
     if not resolved.empty:
-        resolved["Icono"] = resolved["Severidad"].map(PUNTOS)
+        resolved["Severidad"] = resolved["Severidad"].apply(
+            lambda s: f"{PUNTOS.get(s, '')} {s}"
+        )
         print("VULNERABILIDADES CORREGIDAS")
         print(resolved)
 
@@ -197,7 +200,9 @@ def main() -> None:
         [["Activo Afectado", "Severidad", "Vulnerabilidad"]]
     )
     if not new.empty:
-        new["Icono"] = new["Severidad"].map(PUNTOS)
+        new["Severidad"] = new["Severidad"].apply(
+            lambda s: f"{PUNTOS.get(s, '')} {s}"
+        )
         print("VULNERABILIDADES NUEVAS")
         print(new)
 
