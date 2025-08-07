@@ -151,6 +151,7 @@ def main() -> None:
     }
     rename_map = {k: v for k, v in rename_map.items() if k in matches.columns}
     out = matches[list(rename_map)].rename(columns=rename_map)
+    out = out.loc[:, ~out.columns.duplicated()]
     out = out[[c for c in ["Activo Afectado", "Vulnerabilidad", "Descripción"] if c in out.columns]]
     print(out)
 
