@@ -142,11 +142,14 @@ def main() -> None:
     rename_map = {
         "Activo Afectado_f1": "Activo Afectado",
         "Activo Afectado_f2": "Activo Afectado",
+        "Vulnerabilidad_f1": "Vulnerabilidad",
+        "Vulnerabilidad_f2": "Vulnerabilidad",
         "Descripción_f1": "Descripción",
         "Descripción_f2": "Descripción",
     }
     rename_map = {k: v for k, v in rename_map.items() if k in matches.columns}
     out = matches[list(rename_map)].rename(columns=rename_map)
+    out = out[[c for c in ["Activo Afectado", "Vulnerabilidad", "Descripción"] if c in out.columns]]
     print(out)
 
 
