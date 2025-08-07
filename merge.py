@@ -54,6 +54,12 @@ SEVERITY_MAP = {
 }
 
 
+COLUMN_ALIASES = {
+    "Descripcion": "Descripción",
+    "Description": "Descripción",
+}
+
+
 def _load_file(path: str | Path) -> pd.DataFrame:
     """Carga un fichero TSV o Excel en un ``DataFrame``.
 
@@ -80,7 +86,13 @@ def _normalise(df: pd.DataFrame) -> pd.DataFrame:
     Se crean columnas auxiliares con el sufijo ``_norm`` para utilizar en el
     cruce.  Las cadenas se convierten a minúsculas y se eliminan espacios. La
     columna ``Severidad`` se traduce a su valor canonical en español.
+
+    Se aceptan alias de columnas definidos en ``COLUMN_ALIASES``; por ejemplo,
+    ``Description`` o ``Descripcion`` se consideran equivalentes a
+    ``Descripción``.
     """
+
+    df = df.rename(columns=COLUMN_ALIASES)
 
     required = ["Activo Afectado", "Severidad", "Vulnerabilidad", "Descripción"]
     missing = [c for c in required if c not in df.columns]
