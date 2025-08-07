@@ -1,51 +1,37 @@
-import os
-import re
+"""Herramienta para cruzar vulnerabilidades entre dos ficheros.
+
+El script recibe dos rutas de archivo.  Cada fichero debe contener las
+columnas:
+
+    - ``Activo Afectado``
+    - ``Severidad``
+    - ``Vulnerabilidad``
+    - ``Descripción``
+
+Se comparan línea a línea y se consideran coincidencias únicamente cuando
+los valores de las cuatro columnas son iguales.  Para la columna
+``Severidad`` se aplica un mapa de equivalencias para aceptar variantes como
+``high`` -> ``Alta``.
+
+Si se encuentran coincidencias se muestran los valores de las columnas para
+cada fichero.  En caso contrario se imprime ``No se han encontrado
+coincidencias``.
+"""
+
+from __future__ import annotations
+
 import argparse
-from collections import defaultdict
-from bs4 import BeautifulSoup
+import os
+from typing import Callable
+
 import pandas as pd
-from docx import Document
-import datetime
 
-# Obtener la ruta absoluta del directorio donde está este script
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-INPUT_DIR = os.path.join(SCRIPT_DIR, "inputs")
-OUTPUT_DIR = os.path.join(SCRIPT_DIR, "outputs")
-os.makedirs(INPUT_DIR, exist_ok=True)
-os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# Definir rutas absolutas de los archivos de entrada
-# Cambia los nombres si tus archivos tienen nombres diferentes
-TSV_FILENAME = "report_AAVV_Unificado.tsv"
-XLSX_FILENAME = "AAVV unificado.xlsx"
-tsv_file = os.path.join(INPUT_DIR, TSV_FILENAME)
-xlsx_file = os.path.join(INPUT_DIR, XLSX_FILENAME)
+# ---------------------------------------------------------------------------
+# Utilidades
+# ---------------------------------------------------------------------------
 
-# Mensajes de depuración para saber qué busca y dónde
-#print(f"Buscando TSV en: {tsv_file}")
-#print(f"Buscando Excel en: {xlsx_file}")
-#print(f"Archivos realmente presentes en 'inputs': {os.listdir(INPUT_DIR)}")
-
-# Verificar existencia de archivos antes de cargar
-if not os.path.isfile(tsv_file):
-    print(f"[ERROR] No se encontró el archivo TSV: {tsv_file}")
-    raise FileNotFoundError(f"No se encontró el archivo TSV: {tsv_file}")
-if not os.path.isfile(xlsx_file):
-    print(f"[ERROR] No se encontró el archivo Excel: {xlsx_file}")
-    raise FileNotFoundError(f"No se encontró el archivo Excel: {xlsx_file}")
-
-# Cargar el TSV intentando primero con UTF-8 y
-# haciendo un fallback a latin-1 si aparecen errores
-try:
-    df_tsv = pd.read_csv(tsv_file, sep='\t', encoding="utf-8")
-except UnicodeDecodeError:
-    df_tsv = pd.read_csv(tsv_file, sep='\t', encoding="latin-1")
-
-# Cargar el Excel
-df_xlsx = pd.read_excel(xlsx_file)
-
-# Diccionarios de equivalencias para severidad y riesgo
-severity_map = {
+SEVERITY_MAP = {
     "critical": "Crítica",
     "critica": "Crítica",
     "crítica": "Crítica",
@@ -59,67 +45,95 @@ severity_map = {
     "informativa": "Informativa",
 }
 
-# Normalizar y aplicar equivalencias en columnas de severidad y riesgo
-for df in (df_tsv, df_xlsx):
-    if "Severidad" in df.columns:
-        df["Severidad"] = (
-            df["Severidad"].astype(str).str.lower().str.strip().map(severity_map).fillna(df["Severidad"])
-        )
-    if "Riesgo" in df.columns:
-        df["Riesgo"] = (
-            df["Riesgo"].astype(str).str.lower().str.strip().map(risk_map).fillna(df["Riesgo"])
-        )
 
-# Columnas clave para realizar el cruce
-required_columns = [
-    "HostValue",
-    "Activo Afectado",
-    "Vulnerabilidad",
-]
+def _load_file(path: str) -> pd.DataFrame:
+    """Carga un fichero TSV o Excel en un ``DataFrame``.
 
-# Normalizar cadenas en columnas clave
-for col in required_columns:
-    if col in df_tsv.columns:
-        df_tsv[col] = df_tsv[col].astype(str).str.lower().str.strip()
-    if col in df_xlsx.columns:
-        df_xlsx[col] = df_xlsx[col].astype(str).str.lower().str.strip()
+    Parameters
+    ----------
+    path:
+        Ruta del fichero a cargar.  El formato se determina por la extensión.
+    """
 
-# Mostrar columnas de ambos archivos para depuración
-#print(f"Columnas en el TSV: {list(df_tsv.columns)}")
-#print(f"Columnas en el Excel: {list(df_xlsx.columns)}")
+    ext = os.path.splitext(path)[1].lower()
+    if ext in {".tsv", ".csv", ".txt"}:
+        try:
+            return pd.read_csv(path, sep="\t", encoding="utf-8")
+        except UnicodeDecodeError:
+            return pd.read_csv(path, sep="\t", encoding="latin-1")
+    if ext in {".xlsx", ".xls"}:
+        return pd.read_excel(path)
+    raise ValueError(f"Formato de fichero no soportado: {path}")
 
-# Verificar que todas las columnas necesarias estén presentes en ambos DataFrames
-missing_tsv = [col for col in required_columns if col not in df_tsv.columns]
-missing_xlsx = [col for col in required_columns if col not in df_xlsx.columns]
-if missing_tsv or missing_xlsx:
-    raise ValueError(
-        f"Faltan columnas en los DataFrames. TSV: {missing_tsv}, Excel: {missing_xlsx}"
+
+def _normalise(df: pd.DataFrame) -> pd.DataFrame:
+    """Devuelve una copia del ``DataFrame`` con columnas normalizadas.
+
+    Se crean columnas auxiliares con el sufijo ``_norm`` para utilizar en el
+    cruce.  Las cadenas se convierten a minúsculas y se eliminan espacios. La
+    columna ``Severidad`` se traduce a su valor canonical en español.
+    """
+
+    required = ["Activo Afectado", "Severidad", "Vulnerabilidad", "Descripción"]
+    missing = [c for c in required if c not in df.columns]
+    if missing:
+        raise ValueError(f"Faltan columnas requeridas: {missing}")
+
+    out = df.copy()
+    for col in required:
+        out[f"{col}_norm"] = out[col].astype(str).str.strip().str.lower()
+
+    out["Severidad_norm"] = (
+        out["Severidad_norm"].map(SEVERITY_MAP).fillna(out["Severidad_norm"])
     )
+    return out
 
-# Buscar coincidencias estrictas
-coincidencias = pd.merge(df_tsv, df_xlsx, on=required_columns, how="inner")
 
-# Opcional: detectar filas sin coincidencias exactas
-outer_merge = pd.merge(
-    df_tsv, df_xlsx, on=required_columns, how="outer", indicator=True
-)
-no_coinciden = outer_merge[outer_merge["_merge"] != "both"]
+# ---------------------------------------------------------------------------
+# Lógica principal
+# ---------------------------------------------------------------------------
 
-# Mostrar resultados
-print("─" * 80)  # Línea continua separadora
-if coincidencias.empty:
-    print("No se han encontrado coincidencias")
-else:
-    print("Se han encontrado coincidencias:")
-    columnas = [
-        "Activo Afectado",
-        "Vulnerabilidad",
-        "Severidad",
-        "Descripción",
-        "Estado",
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Busca vulnerabilidades del segundo fichero en el primero"
+    )
+    parser.add_argument("file1", help="Primer fichero de referencia")
+    parser.add_argument("file2", help="Segundo fichero a comparar")
+    args = parser.parse_args()
+
+    df1 = _load_file(args.file1)
+    df2 = _load_file(args.file2)
+
+    n1 = _normalise(df1)
+    n2 = _normalise(df2)
+
+    on_cols = [
+        "Activo Afectado_norm",
+        "Severidad_norm",
+        "Vulnerabilidad_norm",
+        "Descripción_norm",
     ]
-    print(coincidencias[columnas])
-    if not no_coinciden.empty:
-        print("Filas que no coinciden entre los ficheros:")
-        print(no_coinciden)
-print("─" * 80)  # Línea continua separadora
+
+    matches = pd.merge(n1, n2, on=on_cols, how="inner", suffixes=("_f1", "_f2"))
+
+    if matches.empty:
+        print("No se han encontrado coincidencias")
+        return
+
+    cols = [
+        "Activo Afectado_f1",
+        "Severidad_f1",
+        "Vulnerabilidad_f1",
+        "Descripción_f1",
+        "Activo Afectado_f2",
+        "Severidad_f2",
+        "Vulnerabilidad_f2",
+        "Descripción_f2",
+    ]
+    print(matches[cols])
+
+
+if __name__ == "__main__":
+    main()
+
