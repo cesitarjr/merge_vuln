@@ -20,18 +20,19 @@ coincidencias``.
 
 from __future__ import annotations
 
-import argparse
 import os
 from pathlib import Path
-from typing import Callable
 
 import pandas as pd
 
 
-INPUT_DIR = Path("input")
+INPUT_DIR = Path("inputs")
 OUTPUT_DIR = Path("output")
 INPUT_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
+
+FILE1 = INPUT_DIR / "AAVV unificado.xlsx"
+FILE2 = INPUT_DIR / "report_AAVV_Unificado.tsv"
 
 
 # ---------------------------------------------------------------------------
@@ -102,25 +103,8 @@ def _normalise(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Busca vulnerabilidades del segundo fichero en el primero"
-    )
-    parser.add_argument(
-        "file1",
-        nargs="?",
-        default=INPUT_DIR / "reporte_A.tsv",
-        help="Primer fichero de referencia",
-    )
-    parser.add_argument(
-        "file2",
-        nargs="?",
-        default=INPUT_DIR / "reporte_B.tsv",
-        help="Segundo fichero a comparar",
-    )
-    args = parser.parse_args()
-
-    df1 = _load_file(args.file1)
-    df2 = _load_file(args.file2)
+    df1 = _load_file(FILE1)
+    df2 = _load_file(FILE2)
 
     n1 = _normalise(df1)
     n2 = _normalise(df2)
