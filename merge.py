@@ -22,9 +22,16 @@ from __future__ import annotations
 
 import argparse
 import os
+from pathlib import Path
 from typing import Callable
 
 import pandas as pd
+
+
+INPUT_DIR = Path("input")
+OUTPUT_DIR = Path("output")
+INPUT_DIR.mkdir(exist_ok=True)
+OUTPUT_DIR.mkdir(exist_ok=True)
 
 
 # ---------------------------------------------------------------------------
@@ -46,7 +53,7 @@ SEVERITY_MAP = {
 }
 
 
-def _load_file(path: str) -> pd.DataFrame:
+def _load_file(path: str | Path) -> pd.DataFrame:
     """Carga un fichero TSV o Excel en un ``DataFrame``.
 
     Parameters
@@ -55,7 +62,7 @@ def _load_file(path: str) -> pd.DataFrame:
         Ruta del fichero a cargar.  El formato se determina por la extensión.
     """
 
-    ext = os.path.splitext(path)[1].lower()
+    ext = os.path.splitext(str(path))[1].lower()
     if ext in {".tsv", ".csv", ".txt"}:
         try:
             return pd.read_csv(path, sep="\t", encoding="utf-8")
@@ -98,8 +105,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Busca vulnerabilidades del segundo fichero en el primero"
     )
-    parser.add_argument("file1", help="Primer fichero de referencia")
-    parser.add_argument("file2", help="Segundo fichero a comparar")
+    parser.add_argument(
+        "file1",
+        nargs="?",
+        default=INPUT_DIR / "reporte_A.tsv",
+        help="Primer fichero de referencia",
+    )
+    parser.add_argument(
+        "file2",
+        nargs="?",
+        default=INPUT_DIR / "reporte_B.tsv",
+        help="Segundo fichero a comparar",
+    )
     args = parser.parse_args()
 
     df1 = _load_file(args.file1)
