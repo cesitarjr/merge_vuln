@@ -6,10 +6,11 @@ columnas:
     - ``Activo Afectado``
     - ``Severidad``
     - ``Vulnerabilidad``
-    - ``Descripción``
+    - ``Descripción`` (opcional)
 
 Se comparan línea a línea y se consideran coincidencias únicamente cuando
-los valores de las cuatro columnas son iguales.  Para la columna
+los valores de las tres primeras columnas son iguales.  La columna
+``Descripción`` se muestra solo como referencia.  Para la columna
 ``Severidad`` se aplica un mapa de equivalencias para aceptar variantes como
 ``high`` -> ``Alta``.
 
@@ -89,12 +90,12 @@ def _normalise(df: pd.DataFrame) -> pd.DataFrame:
 
     Se aceptan alias de columnas definidos en ``COLUMN_ALIASES``; por ejemplo,
     ``Description`` o ``Descripcion`` se consideran equivalentes a
-    ``Descripción``.
+    ``Descripción`` si está presente.
     """
 
     df = df.rename(columns=COLUMN_ALIASES)
 
-    required = ["Activo Afectado", "Severidad", "Vulnerabilidad", "Descripción"]
+    required = ["Activo Afectado", "Severidad", "Vulnerabilidad"]
     missing = [c for c in required if c not in df.columns]
     if missing:
         raise ValueError(f"Faltan columnas requeridas: {missing}")
@@ -102,6 +103,11 @@ def _normalise(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
     for col in required:
         out[f"{col}_norm"] = out[col].astype(str).str.strip().str.lower()
+
+    if "Descripción" in df.columns:
+        out["Descripción_norm"] = (
+            out["Descripción"].astype(str).str.strip().str.lower()
+        )
 
     out["Severidad_norm"] = (
         out["Severidad_norm"].map(SEVERITY_MAP).fillna(out["Severidad_norm"])
@@ -125,7 +131,6 @@ def main() -> None:
         "Activo Afectado_norm",
         "Severidad_norm",
         "Vulnerabilidad_norm",
-        "Descripción_norm",
     ]
 
     matches = pd.merge(n1, n2, on=on_cols, how="inner", suffixes=("_f1", "_f2"))
@@ -144,6 +149,7 @@ def main() -> None:
         "Vulnerabilidad_f2",
         "Descripción_f2",
     ]
+    cols = [c for c in cols if c in matches.columns]
     print(matches[cols])
 
 
