@@ -139,18 +139,15 @@ def main() -> None:
         print("No se han encontrado coincidencias")
         return
 
-    cols = [
-        "Activo Afectado_f1",
-        "Severidad_f1",
-        "Vulnerabilidad_f1",
-        "Descripción_f1",
-        "Activo Afectado_f2",
-        "Severidad_f2",
-        "Vulnerabilidad_f2",
-        "Descripción_f2",
-    ]
-    cols = [c for c in cols if c in matches.columns]
-    print(matches[cols])
+    rename_map = {
+        "Activo Afectado_f1": "Activo Afectado",
+        "Activo Afectado_f2": "Activo Afectado",
+        "Descripción_f1": "Descripción",
+        "Descripción_f2": "Descripción",
+    }
+    rename_map = {k: v for k, v in rename_map.items() if k in matches.columns}
+    out = matches[list(rename_map)].rename(columns=rename_map)
+    print(out)
 
 
 if __name__ == "__main__":
