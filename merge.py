@@ -52,6 +52,8 @@ SEVERITY_MAP = {
     "low": "Baja",
     "info": "Informativa",
     "informativa": "Informativa",
+    "informational": "Informativa",
+    "informative": "Informativa",
 }
 
 
