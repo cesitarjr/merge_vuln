@@ -28,7 +28,7 @@ import pandas as pd
 
 
 INPUT_DIR = Path("inputs")
-OUTPUT_DIR = Path("output")
+OUTPUT_DIR = Path(__file__).resolve().parent / "outputs"
 INPUT_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -151,6 +151,10 @@ def main() -> None:
     out = matches[list(rename_map)].rename(columns=rename_map)
     out = out[[c for c in ["Activo Afectado", "Vulnerabilidad", "Descripción"] if c in out.columns]]
     print(out)
+
+    output_path = OUTPUT_DIR / "coincidencias.tsv"
+    out.to_csv(output_path, sep="\t", index=False, encoding="utf-8")
+    print(f"Resultados exportados en {output_path}")
 
 
 if __name__ == "__main__":
