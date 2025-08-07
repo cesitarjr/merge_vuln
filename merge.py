@@ -56,6 +56,14 @@ SEVERITY_MAP = {
     "informative": "Informativa",
 }
 
+PUNTOS = {
+    "Crítica": "\u26A0",
+    "Alta": "\U0001F534",
+    "Media": "\U0001F7E1",
+    "Baja": "\U0001F535",
+    "Informativa": "\u2139",
+}
+
 
 COLUMN_ALIASES = {
     "Descripcion": "Descripción",
@@ -143,6 +151,8 @@ def main() -> None:
         rename_map = {
             "Activo Afectado_f1": "Activo Afectado",
             "Activo Afectado_f2": "Activo Afectado",
+            "Severidad_f1": "Severidad",
+            "Severidad_f2": "Severidad",
             "Vulnerabilidad_f1": "Vulnerabilidad",
             "Vulnerabilidad_f2": "Vulnerabilidad",
             "Descripción_f1": "Descripción",
@@ -151,10 +161,17 @@ def main() -> None:
         rename_map = {k: v for k, v in rename_map.items() if k in matches.columns}
         out = matches[list(rename_map)].rename(columns=rename_map)
         out = out.loc[:, ~out.columns.duplicated()]
+        out["Icono"] = out["Severidad"].map(PUNTOS)
         out = out[
             [
                 c
-                for c in ["Activo Afectado", "Vulnerabilidad", "Descripción"]
+                for c in [
+                    "Activo Afectado",
+                    "Severidad",
+                    "Vulnerabilidad",
+                    "Descripción",
+                    "Icono",
+                ]
                 if c in out.columns
             ]
         ]
@@ -167,18 +184,20 @@ def main() -> None:
     resolved = (
         pd.merge(n1, n2[on_cols], on=on_cols, how="left", indicator=True)
         .query("_merge == 'left_only'")
-        [["Activo Afectado", "Vulnerabilidad"]]
+        [["Activo Afectado", "Severidad", "Vulnerabilidad"]]
     )
     if not resolved.empty:
+        resolved["Icono"] = resolved["Severidad"].map(PUNTOS)
         print("VULNERABILIDADES CORREGIDAS")
         print(resolved)
 
     new = (
         pd.merge(n2, n1[on_cols], on=on_cols, how="left", indicator=True)
         .query("_merge == 'left_only'")
-        [["Activo Afectado", "Vulnerabilidad"]]
+        [["Activo Afectado", "Severidad", "Vulnerabilidad"]]
     )
     if not new.empty:
+        new["Icono"] = new["Severidad"].map(PUNTOS)
         print("VULNERABILIDADES NUEVAS")
         print(new)
 
