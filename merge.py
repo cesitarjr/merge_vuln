@@ -161,8 +161,11 @@ def main() -> None:
         rename_map = {k: v for k, v in rename_map.items() if k in matches.columns}
         out = matches[list(rename_map)].rename(columns=rename_map)
         out = out.loc[:, ~out.columns.duplicated()]
-        out["Severidad"] = out["Severidad"].apply(
-            lambda s: f"{PUNTOS.get(s, '')} {s}"
+        out["Severidad"] = (
+            out["Severidad"]
+            .str.strip().str.lower()
+            .map(SEVERITY_MAP).fillna(out["Severidad"])
+            .apply(lambda s: f"{PUNTOS.get(s, '')} {s}")
         )
         out = out[
             [
