@@ -186,7 +186,7 @@ def main() -> None:
         print(
             out.assign(
                 Severidad=lambda df: df["Severidad"].map(format_severity)
-            )
+            ).to_string(index=False)
         )
         print("─" * 160)  # Línea continua separadora inferior
 
@@ -210,7 +210,7 @@ def main() -> None:
         print(
             resolved.assign(
                 Severidad=lambda df: df["Severidad"].map(format_severity)
-            )
+            ).to_string(index=False)
         )
         resolved_path = OUTPUT_DIR / "vulnerabilidades_corregidas.tsv"
         resolved[["Activo Afectado", "Vulnerabilidad", "Severidad"]].to_csv(
@@ -234,7 +234,7 @@ def main() -> None:
         print(
             new.assign(
                 Severidad=lambda df: df["Severidad"].map(format_severity)
-            )
+            ).to_string(index=False)
         )
         new_path = OUTPUT_DIR / "vulnerabilidades_nuevas.tsv"
         new[["Activo Afectado", "Vulnerabilidad", "Severidad"]].to_csv(
