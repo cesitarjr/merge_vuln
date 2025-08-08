@@ -193,6 +193,7 @@ def main() -> None:
         output_path = OUTPUT_DIR / "coincidencias.tsv"
         out.to_csv(output_path, sep="\t", index=False, encoding="utf-8")
         print(f"Resultados exportados en {output_path}")
+        print(f"Total: {len(out)}")
         print("─" * 160)  # Línea continua separadora inferior
     resolved = (
         pd.merge(n1, n2[on_cols], on=on_cols, how="left", indicator=True)
@@ -216,6 +217,7 @@ def main() -> None:
             resolved_path, sep="\t", index=False, encoding="utf-8"
         )
         print(f"Resultados exportados en {resolved_path}")
+        print(f"Total: {len(resolved)}")
         print("─" * 160)  # Línea continua separadora inferior
 
     new = (
@@ -239,6 +241,7 @@ def main() -> None:
             new_path, sep="\t", index=False, encoding="utf-8"
         )
         print(f"Resultados exportados en {new_path}")
+        print(f"Total: {len(new)}")
         print("─" * 160)  # Línea continua separadora inferior
 
 
