@@ -164,8 +164,12 @@ def main() -> None:
         out["Severidad"] = (
             out["Severidad"]
             .str.strip().str.lower()
-            .map(SEVERITY_MAP).fillna(out["Severidad"])
-            .apply(lambda s: f"{PUNTOS.get(s, '')} {s}")
+            .map(SEVERITY_MAP)
+            .fillna(out["Severidad"])
+        )
+        display = out.copy()
+        display["Severidad"] = display["Severidad"].apply(
+            lambda s: f"{PUNTOS.get(s, '')} {s}"
         )
         out = out[
             [
@@ -173,12 +177,13 @@ def main() -> None:
                 for c in [
                     "Activo Afectado",
                     "Vulnerabilidad",
-                    "Severidad",                ]
+                    "Severidad",
+                ]
                 if c in out.columns
             ]
         ]
         print("─" * 160)  # Línea continua separadora inferior
-        print(out)
+        print(display)
         print("─" * 160)  # Línea continua separadora inferior
 
         output_path = OUTPUT_DIR / "coincidencias.tsv"
@@ -192,13 +197,20 @@ def main() -> None:
     )
     if not resolved.empty:
         resolved = resolved.rename(columns={"Severidad_norm": "Severidad"})
-        resolved["Severidad"] = (
+        resolved["Severidad"] = resolved["Severidad"].map(SEVERITY_MAP).fillna(
             resolved["Severidad"]
-            .map(SEVERITY_MAP).fillna(resolved["Severidad"])
-            .apply(lambda s: f"{PUNTOS.get(s, '')} {s}")
+        )
+        resolved_display = resolved.copy()
+        resolved_display["Severidad"] = resolved_display["Severidad"].apply(
+            lambda s: f"{PUNTOS.get(s, '')} {s}"
         )
         print("VULNERABILIDADES CORREGIDAS")
-        print(resolved)
+        print(resolved_display)
+        resolved_path = OUTPUT_DIR / "vulnerabilidades_corregidas.tsv"
+        resolved[["Activo Afectado", "Vulnerabilidad", "Severidad"]].to_csv(
+            resolved_path, sep="\t", index=False, encoding="utf-8"
+        )
+        print(f"Resultados exportados en {resolved_path}")
         print("─" * 160)  # Línea continua separadora inferior
 
     new = (
@@ -207,11 +219,17 @@ def main() -> None:
         [["Activo Afectado", "Vulnerabilidad", "Severidad"]]
     )
     if not new.empty:
-        new["Severidad"] = new["Severidad"].apply(
+        new_display = new.copy()
+        new_display["Severidad"] = new_display["Severidad"].apply(
             lambda s: f"{PUNTOS.get(s, '')} {s}"
         )
         print("VULNERABILIDADES NUEVAS")
-        print(new)
+        print(new_display)
+        new_path = OUTPUT_DIR / "vulnerabilidades_nuevas.tsv"
+        new[["Activo Afectado", "Vulnerabilidad", "Severidad"]].to_csv(
+            new_path, sep="\t", index=False, encoding="utf-8"
+        )
+        print(f"Resultados exportados en {new_path}")
         print("─" * 160)  # Línea continua separadora inferior
 
 
