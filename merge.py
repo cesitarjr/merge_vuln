@@ -199,6 +199,11 @@ def main() -> None:
         )
         print("VULNERABILIDADES CORREGIDAS")
         print(resolved)
+        resolved_path = OUTPUT_DIR / "vulnerabilidades_corregidas.tsv"
+        resolved[["Activo Afectado", "Vulnerabilidad", "Severidad"]].to_csv(
+            resolved_path, sep="\t", index=False, encoding="utf-8"
+        )
+        print(f"Resultados exportados en {resolved_path}")
         print("─" * 160)  # Línea continua separadora inferior
 
     new = (
@@ -212,6 +217,11 @@ def main() -> None:
         )
         print("VULNERABILIDADES NUEVAS")
         print(new)
+        new_path = OUTPUT_DIR / "vulnerabilidades_nuevas.tsv"
+        new[["Activo Afectado", "Vulnerabilidad", "Severidad"]].to_csv(
+            new_path, sep="\t", index=False, encoding="utf-8"
+        )
+        print(f"Resultados exportados en {new_path}")
         print("─" * 160)  # Línea continua separadora inferior
 
 
