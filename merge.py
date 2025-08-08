@@ -185,11 +185,14 @@ def main() -> None:
     resolved = (
         pd.merge(n1, n2[on_cols], on=on_cols, how="left", indicator=True)
         .query("_merge == 'left_only'")
-        [["Activo Afectado", "Severidad", "Vulnerabilidad"]]
+        [["Activo Afectado", "Severidad_norm", "Vulnerabilidad"]]
     )
     if not resolved.empty:
-        resolved["Severidad"] = resolved["Severidad"].apply(
-            lambda s: f"{PUNTOS.get(s, '')} {s}"
+        resolved = resolved.rename(columns={"Severidad_norm": "Severidad"})
+        resolved["Severidad"] = (
+            resolved["Severidad"]
+            .map(SEVERITY_MAP).fillna(resolved["Severidad"])
+            .apply(lambda s: f"{PUNTOS.get(s, '')} {s}")
         )
         print("VULNERABILIDADES CORREGIDAS")
         print(resolved)
