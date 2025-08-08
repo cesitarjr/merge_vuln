@@ -172,23 +172,23 @@ def main() -> None:
                 c
                 for c in [
                     "Activo Afectado",
-                    "Severidad",
                     "Vulnerabilidad",
-                    "Descripción",
-                ]
+                    "Severidad",                ]
                 if c in out.columns
             ]
         ]
+        print("─" * 160)  # Línea continua separadora inferior
         print(out)
+        print("─" * 160)  # Línea continua separadora inferior
 
         output_path = OUTPUT_DIR / "coincidencias.tsv"
         out.to_csv(output_path, sep="\t", index=False, encoding="utf-8")
         print(f"Resultados exportados en {output_path}")
-
+        print("─" * 160)  # Línea continua separadora inferior
     resolved = (
         pd.merge(n1, n2[on_cols], on=on_cols, how="left", indicator=True)
         .query("_merge == 'left_only'")
-        [["Activo Afectado", "Severidad_norm", "Vulnerabilidad"]]
+        [["Activo Afectado", "Vulnerabilidad", "Severidad_norm"]]
     )
     if not resolved.empty:
         resolved = resolved.rename(columns={"Severidad_norm": "Severidad"})
@@ -199,11 +199,12 @@ def main() -> None:
         )
         print("VULNERABILIDADES CORREGIDAS")
         print(resolved)
+        print("─" * 160)  # Línea continua separadora inferior
 
     new = (
         pd.merge(n2, n1[on_cols], on=on_cols, how="left", indicator=True)
         .query("_merge == 'left_only'")
-        [["Activo Afectado", "Severidad", "Vulnerabilidad"]]
+        [["Activo Afectado", "Vulnerabilidad", "Severidad"]]
     )
     if not new.empty:
         new["Severidad"] = new["Severidad"].apply(
@@ -211,8 +212,8 @@ def main() -> None:
         )
         print("VULNERABILIDADES NUEVAS")
         print(new)
+        print("─" * 160)  # Línea continua separadora inferior
 
 
 if __name__ == "__main__":
     main()
-
