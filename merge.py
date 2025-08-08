@@ -65,6 +65,12 @@ PUNTOS = {
 }
 
 
+def format_severity(severity: str) -> str:
+    """Añade el marcador de ``PUNTOS`` a la severidad para mostrarla."""
+
+    return f"{PUNTOS.get(severity, '')} {severity}"
+
+
 COLUMN_ALIASES = {
     "Descripcion": "Descripción",
     "Description": "Descripción",
@@ -165,7 +171,6 @@ def main() -> None:
             out["Severidad"]
             .str.strip().str.lower()
             .map(SEVERITY_MAP).fillna(out["Severidad"])
-            .apply(lambda s: f"{PUNTOS.get(s, '')} {s}")
         )
         out = out[
             [
@@ -178,7 +183,11 @@ def main() -> None:
             ]
         ]
         print("─" * 160)  # Línea continua separadora inferior
-        print(out)
+        print(
+            out.assign(
+                Severidad=lambda df: df["Severidad"].map(format_severity)
+            )
+        )
         print("─" * 160)  # Línea continua separadora inferior
 
         output_path = OUTPUT_DIR / "coincidencias.tsv"
@@ -193,12 +202,15 @@ def main() -> None:
     if not resolved.empty:
         resolved = resolved.rename(columns={"Severidad_norm": "Severidad"})
         resolved["Severidad"] = (
-            resolved["Severidad"]
+            resolved["Severidad"].str.strip().str.lower()
             .map(SEVERITY_MAP).fillna(resolved["Severidad"])
-            .apply(lambda s: f"{PUNTOS.get(s, '')} {s}")
         )
         print("VULNERABILIDADES CORREGIDAS")
-        print(resolved)
+        print(
+            resolved.assign(
+                Severidad=lambda df: df["Severidad"].map(format_severity)
+            )
+        )
         resolved_path = OUTPUT_DIR / "vulnerabilidades_corregidas.tsv"
         resolved[["Activo Afectado", "Vulnerabilidad", "Severidad"]].to_csv(
             resolved_path, sep="\t", index=False, encoding="utf-8"
@@ -212,11 +224,16 @@ def main() -> None:
         [["Activo Afectado", "Vulnerabilidad", "Severidad"]]
     )
     if not new.empty:
-        new["Severidad"] = new["Severidad"].apply(
-            lambda s: f"{PUNTOS.get(s, '')} {s}"
+        new["Severidad"] = (
+            new["Severidad"].str.strip().str.lower()
+            .map(SEVERITY_MAP).fillna(new["Severidad"])
         )
         print("VULNERABILIDADES NUEVAS")
-        print(new)
+        print(
+            new.assign(
+                Severidad=lambda df: df["Severidad"].map(format_severity)
+            )
+        )
         new_path = OUTPUT_DIR / "vulnerabilidades_nuevas.tsv"
         new[["Activo Afectado", "Vulnerabilidad", "Severidad"]].to_csv(
             new_path, sep="\t", index=False, encoding="utf-8"
