@@ -1,0 +1,17 @@
+Latest Vulnerabilities	https://cvefeed.io/rssfeed/latest.xml
+Latest High/Critical Vulnerabilitiy Feed	https://cvefeed.io/rssfeed/severity/high.xml
+FortiGuard Labs | FortiGuard Center - Threat Signal Report	https://filestore.fortinet.com/fortiguard/rss/threatsignal.xml
+FortiGuard Labs | FortiGuard Center - Outbreak Alerts	https://filestore.fortinet.com/fortiguard/rss/outbreakalert.xml
+FortiGuard Labs | Endpoint Vulnerability Updates ( Windows )	https://filestore.fortinet.com/fortiguard/rss/epvuln.xml
+Microsoft Vulnerabilities	https://cvefeed.io/rssfeed/vendor/microsoft.xml
+NVD - National Vulnerability Database	https://nvd.nist.gov/feeds/xml/cve/misc/nvd-rss.xml
+CISA Cybersecurity Advisories	https://www.cisa.gov/cybersecurity-advisories/all.xml
+CERT Vulnerability Notes	https://kb.cert.org/vuls/rss/rss.xml
+FortiGuard Endpoint Vulnerability Updates	https://filestore.fortinet.com/fortiguard/rss/epvuln.xml
+FortiGuard Threat Signal Reports	https://filestore.fortinet.com/fortiguard/rss/threatsignal.xml
+FortiGuard Outbreak Alerts	https://filestore.fortinet.com/fortiguard/rss/outbreakalert.xml
+Microsoft Security Update Guide	https://msrc.microsoft.com/update-guide/rss
+Ubuntu Security Notices	https://ubuntu.com/security/notices/rss.xml
+Red Hat Security Data (CVRF)	https://access.redhat.com/labs/securitydataapi/cvrf.xml
+MITRE CVE Master List	https://cve.mitre.org/data/downloads/allitems.xml
+Exploit Database (PoC)	https://www.exploit-db.com/rss.xml

@@ -1,0 +1,19 @@
+{
+  "smtp": {
+    "host": "smtp.gmail.com",
+    "port": 587,
+    "use_tls": true,
+    "username": "alertas@tudominio.com",
+    "password": "APP_PASSWORD",
+    "from": "alertas@tudominio.com",
+    "to": ["tu.email@dominio.com"]
+  },
+  "threshold_fuzzy": 82,
+  "user_agent": "VulnWatcher/1.5 (+https://tuempresa.local)",
+  "timeout": 25,
+  "min_fuzzy_len": 5,
+  "filters": {
+    "min_severity": "MEDIUM",
+    "require_cve": true
+  }
+}
